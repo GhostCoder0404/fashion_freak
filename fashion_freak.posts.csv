@@ -1,0 +1,5 @@
+_id,title,caption,image_url,gender,occasion,owner_id,community_rating,ratings[0].user_id,ratings[1].user_id,ratings[0].score,ratings[1].score,created_at
+693bc99af8b8562f6c051418,Check my fit 😎,Cafe !!,http://127.0.0.1:8000/uploads/d95b73fa-edec-4275-890c-84d07de8d139.jpg,female,casual,693bc8cff62fc05c535554e6,9,693bc8cff62fc05c535554e6,6939a55f469090209ef60f2b,8,10,2025-12-12T07:51:54.775Z
+693d140eb831178220a08016,Check My Fit 🥳,DATE.....,http://127.0.0.1:8000/uploads/ddc32390-c677-493a-a4d3-88d9cf6fb233.jpeg,male,casual,6939a55f469090209ef60f2b,10,6939a55f469090209ef60f2b,,10,,2025-12-13T07:21:50.413Z
+693d1430b831178220a08017,Rate this ,Going For Hangout with Friends,http://127.0.0.1:8000/uploads/df8e4669-bedb-4420-9c42-40a4b654833c.jpeg,male,casual,6939a55f469090209ef60f2b,7,6939a55f469090209ef60f2b,,7,,2025-12-13T07:22:24.400Z
+69b3b5e6820573b673ada465,Nightout ,Going For Dinner,http://127.0.0.1:8000/uploads/fa549527-bfd8-4977-afe0-a358628c79f4.jpeg,male,casual,69b3b511820573b673ada464,10,6939a55f469090209ef60f2b,,10,,2026-03-13T06:59:50.031Z

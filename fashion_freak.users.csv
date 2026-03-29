@@ -1,0 +1,6 @@
+_id,username,email,password,avatar,bio,created_at
+6939a55f469090209ef60f2b,shekhar,shekhar@example.com,$pbkdf2-sha256$29000$NAZg7B2jdA7h3DunVOodYw$Nv.wjIGfk/AB0mHP1wMWPiZ0t4Jf23jND70/XIrNRPw,http://127.0.0.1:8000/uploads/e7ddbeea-dbb6-437d-a3cb-e2861faa1504.jpg,Just the owner ❤️❤️,2025-12-10T16:52:47.598Z
+693bc872f62fc05c535554e5,nisha ,nisha@gmail.com,$pbkdf2-sha256$29000$nXNOae19LyUkRIgx5twbYw$gpiChb2I5cDRnl1Mdt6JJxuf.Dsv93sExqux2sIX948,,,2025-12-12T07:46:58.351Z
+693bc8cff62fc05c535554e6,nisha123,nisha123@gmail.com,$pbkdf2-sha256$29000$D8H4fw/h3Lv3XsuZMwZAiA$NTvHpRvAGWOl43CX.gCjspYJE3YroqBnZmGN2RguoGY,http://127.0.0.1:8000/uploads/594f9ef0-a7d8-4de0-bb5a-ec2087617129.jpg,,2025-12-12T07:48:31.441Z
+693fce59055ebbf54bedf6ab,Harsh,h@gmail.com,$pbkdf2-sha256$29000$Pec8J8Q453xPaY2xFsLY.w$CZBq18A7XH0qbSPfDGLAxnCEnF7GcZlDLVjM9onbayk,,,2025-12-15T09:01:13.619Z
+69b3b511820573b673ada464,om_deshmukh,om@gmail.com,$pbkdf2-sha256$29000$3JtTypkz5nxPSQmhlPJeKw$DYOsXSy9E64DbJojFgoVqHF4UpcpOeGJTBuuwMhtVYs,http://127.0.0.1:8000/uploads/e2b655c0-e30f-44e5-8301-c09da509fd09.jpg,,2026-03-13T06:56:17.958Z
