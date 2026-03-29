@@ -8,3 +8,7 @@ build/
 *.h5
 *.csv
 uploads/
+*.pkl
+fashion_dataset/images/
+fashion_dataset/extracted/
+fashion_dataset/sheets/
