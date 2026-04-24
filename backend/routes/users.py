@@ -33,6 +33,7 @@ async def profile(username: str):
     return {"user": user, "posts": posts}
 
 @router.post("/update_avatar")
+@router.post("/avatar")  # mobile alias
 async def update_avatar(file: UploadFile = File(...), user=Depends(get_current_user)):
     url = save_upload(file)
     await users_collection.update_one({"_id": user["_id"]}, {"$set": {"avatar": url}})
@@ -55,6 +56,7 @@ async def get_liked_posts(user=Depends(get_current_user)):
     return posts
 
 @router.post("/update")
+@router.put("/profile")   # mobile alias
 async def update_profile(payload: dict, user=Depends(get_current_user)):
     # Safety: prevent updating sensitive fields like password or _id directly here if passed
     payload.pop("_id", None)

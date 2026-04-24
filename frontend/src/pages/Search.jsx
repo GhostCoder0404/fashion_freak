@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch } from "react-icons/fa";
-import { searchUsers } from "../services/api";
+import { searchUsers, buildImageUrl } from "../services/api";
 
 const Container = styled(motion.div)`
   min-height: 80vh;
@@ -91,12 +91,13 @@ const Icon = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 3rem;
+  font-size: clamp(1.8rem, 7vw, 3rem);
   margin-bottom: 3rem;
   font-weight: 800;
   background: linear-gradient(to bottom, #fff, #666);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-align: center;
 `;
 
 export default function Search() {
@@ -145,7 +146,7 @@ export default function Search() {
               {results.map(u => (
                 <SuggestionItem key={u.username} onClick={() => nav(`/profile/${u.username}`)}>
                   <Avatar>
-                    <img src={u.avatar || "https://via.placeholder.com/40"} alt={u.username} />
+                    <img src={buildImageUrl(u.avatar) || "https://via.placeholder.com/40"} alt={u.username} />
                   </Avatar>
                   <span style={{ fontSize: '1.2rem' }}>{u.username}</span>
                 </SuggestionItem>

@@ -2,7 +2,7 @@
 from fastapi import FastAPI, Response, Request
 from fastapi.responses import JSONResponse
 import uvicorn
-from routes import auth, posts, users, prediction
+from routes import auth, posts, users, prediction, find_similar, outfit_analysis
 
 app = FastAPI(title="FashionFreak Backend - Phase1")
 
@@ -41,7 +41,10 @@ async def cors_logging_middleware(request, call_next):
 app.include_router(auth.router)
 app.include_router(posts.router)
 app.include_router(users.router)
-app.include_router(prediction.router)
+app.include_router(prediction.router)          # /api/predict-score  (web)
+app.include_router(prediction.router_root)    # /predict             (mobile)
+app.include_router(find_similar.router)
+app.include_router(outfit_analysis.router)    # /api/outfit-detailed-analysis
 
 from fastapi.staticfiles import StaticFiles
 import os

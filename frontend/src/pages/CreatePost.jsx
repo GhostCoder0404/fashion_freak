@@ -13,6 +13,12 @@ const Container = styled.div`
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+
+  @media (max-width: 640px) {
+    margin: 16px;
+    padding: 1.2rem;
+    border-radius: 8px;
+  }
 `;
 
 const Title = styled.h2`
@@ -169,11 +175,11 @@ export default function CreatePost() {
           Supported: JPG, PNG
         </div>
 
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           <select
             value={gender}
             onChange={e => setGender(e.target.value)}
-            style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #ddd' }}
+            style={{ flex: '1 1 120px', padding: 10, borderRadius: 8, border: '1px solid #ddd' }}
           >
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -181,7 +187,7 @@ export default function CreatePost() {
           <select
             value={occasion}
             onChange={e => setOccasion(e.target.value)}
-            style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #ddd' }}
+            style={{ flex: '1 1 140px', padding: 10, borderRadius: 8, border: '1px solid #ddd' }}
           >
             <option value="casual">Casual</option>
             <option value="formal">Formal</option>

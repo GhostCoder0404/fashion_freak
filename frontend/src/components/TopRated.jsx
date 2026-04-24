@@ -3,8 +3,22 @@ import styled from "styled-components";
 import PostCard from "./PostCard";
 import { fetchFeed } from "../services/api";
 
-const Section = styled.section` padding:36px 0; background:#fafafa; `;
-const Grid = styled.div` display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:1200px; margin:12px auto; @media(max-width:900px){grid-template-columns:1fr;} `;
+const Section = styled.section` padding: 36px 0; background: #fafafa; `;
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  max-width: 1200px;
+  margin: 12px auto;
+  padding: 0 16px;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
 
 export default function TopRated() {
     const [items, setItems] = useState(null);

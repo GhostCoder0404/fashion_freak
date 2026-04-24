@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaMars, FaVenus, FaCloudUploadAlt, FaMagic, FaArrowLeft } from "react-icons/fa";
+import { FaMars, FaVenus, FaCloudUploadAlt, FaMagic, FaArrowLeft, FaCoffee, FaBlackTie, FaRing, FaDumbbell, FaCrown, FaHeart } from "react-icons/fa";
 import * as api from "../services/api"; // We will add predictScore here
 import { useNavigate } from "react-router-dom";
 
@@ -60,10 +60,13 @@ const GenderContainer = styled.div`
   display: flex;
   gap: 4rem;
   margin-top: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
   
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 2rem;
+    align-items: center;
   }
 `;
 
@@ -105,6 +108,13 @@ const GenderCircle = styled(motion.button)`
     background: white;
     color: black;
     svg, span { color: black; }
+  }
+
+  @media (max-width: 480px) {
+    width: 180px;
+    height: 180px;
+    svg { font-size: 3rem; }
+    span { font-size: 1.2rem; }
   }
 `;
 
@@ -200,10 +210,29 @@ const AnalyzeButton = styled(motion.button)`
   color: white;
   cursor: pointer;
   box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+
+  @media (max-width: 480px) {
+    font-size: 1.1rem;
+    padding: 0.9rem 2.5rem;
+  }
   
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+`;
+
+const ResultRow = styled.div`
+  display: flex;
+  gap: 3rem;
+  width: 100%;
+  flex-direction: row;
+  align-items: flex-start;
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
   }
 `;
 
@@ -219,6 +248,12 @@ const ResultContainer = styled(motion.div)`
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.1);
   max-width: 800px;
+  width: 100%;
+
+  @media (max-width: 600px) {
+    padding: 1.5rem 1rem;
+    border-radius: 20px;
+  }
 `;
 
 const ScoreCircle = styled.div`
@@ -274,19 +309,26 @@ const BackButton = styled.button`
   align-items: center;
   gap: 0.5rem;
   opacity: 0.7;
+  z-index: 10;
   
   &:hover { opacity: 1; }
+
+  @media (max-width: 768px) {
+    top: 80px;
+    left: 16px;
+    font-size: 1.1rem;
+  }
 `;
 
 // --- MAIN COMPONENT ---
 
 const OCCASIONS = [
-  { id: "casual", label: "Casual Hangout", color: "#FF7EB3" },
-  { id: "formal", label: "Formal Event", color: "#2575FC" },
-  { id: "wedding", label: "Wedding Guest", color: "#FAD0C4" },
-  { id: "gym", label: "Gym / Sport", color: "#84FAB0" },
-  { id: "prom", label: "Prom Night", color: "#667EEA" },
-  { id: "date", label: "Date Night", color: "#E0C3FC" },
+  { id: "casual", label: "Casual Hangout", color: "#FF7EB3", icon: <FaCoffee /> },
+  { id: "formal", label: "Formal Event", color: "#2575FC", icon: <FaBlackTie /> },
+  { id: "wedding", label: "Wedding Guest", color: "#FAD0C4", icon: <FaRing /> },
+  { id: "gym", label: "Gym / Sport", color: "#84FAB0", icon: <FaDumbbell /> },
+  { id: "prom", label: "Prom Night", color: "#667EEA", icon: <FaCrown /> },
+  { id: "date", label: "Date Night", color: "#E0C3FC", icon: <FaHeart /> },
 ];
 
 export default function TryOutfit() {
@@ -414,7 +456,7 @@ export default function TryOutfit() {
                   whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span style={{ fontSize: "2rem" }}>{occ.id === "gym" ? "🏃" : occ.id === "wedding" ? "💍" : "✨"}</span>
+                  <span style={{ fontSize: "2.5rem", color: occ.color }}>{occ.icon}</span>
                   {occ.label}
                 </OccasionCard>
               ))}
@@ -467,7 +509,7 @@ export default function TryOutfit() {
             <ResultContainer>
               <Title style={{ margin: "0 0 2rem 0", fontSize: '2.5rem' }}>The Verdict</Title>
 
-              <div style={{ display: "flex", gap: "3rem", width: '100%', flexDirection: 'row', alignItems: 'flex-start' }}>
+              <ResultRow>
 
                 {/* LEFT: Image & Score */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem", flex: 1 }}>
@@ -482,7 +524,7 @@ export default function TryOutfit() {
                 </div>
 
                 {/* RIGHT: Analysis & Recommendation */}
-                <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'left', background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '15px' }}>
+                <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'left', background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '15px', width: '100%' }}>
                   <div>
                     <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#00c2b3' }}>Analysis</h3>
                     <p style={{ lineHeight: 1.6, fontSize: '1.1rem', color: '#e2e8f0' }}>{result.compliment}</p>
@@ -494,11 +536,21 @@ export default function TryOutfit() {
                   </div>
                 </div>
 
-              </div>
+              </ResultRow>
 
-              <AnalyzeButton onClick={reset} style={{ marginTop: "2rem" }}>
-                Try Another Outfit
-              </AnalyzeButton>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <AnalyzeButton onClick={reset}>
+                  Try Another Outfit
+                </AnalyzeButton>
+                <AnalyzeButton
+                  onClick={() => navigate("/outfit-analysis", {
+                    state: { preview, file, gender, occasion: occasion?.id }
+                  })}
+                  style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', boxShadow: '0 10px 30px rgba(118,75,162,0.4)' }}
+                >
+                  🔍 Detailed Analysis
+                </AnalyzeButton>
+              </div>
             </ResultContainer>
           </ContentWrapper>
         )}

@@ -37,6 +37,10 @@ export const LeftPanel = styled.div`
     flex: 0.4;
     padding: 40px;
   }
+  @media(max-width: 600px) {
+    flex: 0 0 200px;
+    padding: 28px 24px;
+  }
 `;
 
 export const LeftContent = styled.div`
@@ -62,7 +66,7 @@ export const FormWrapper = styled(motion.div)`
 
 export const Title = styled.h2`
   font-family: ${p => p.theme.fonts.title};
-  font-size: 3rem;
+  font-size: clamp(1.8rem, 5vw, 3rem);
   margin-bottom: 16px;
   color: #fff;
 `;

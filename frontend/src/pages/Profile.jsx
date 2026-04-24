@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useContext } from "react";
-import { profile, updateAvatar, fetchLikedPosts, deletePost, updateProfile } from "../services/api";
+import { profile, updateAvatar, fetchLikedPosts, deletePost, updateProfile, buildImageUrl } from "../services/api";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import PostCard from "../components/PostCard";
@@ -56,6 +56,14 @@ const Tabs = styled.div`
   gap: 2rem;
   border-bottom: 1px solid #eee;
   margin-bottom: 2rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  @media (max-width: 480px) {
+    gap: 1rem;
+  }
 `;
 
 const Tab = styled.button`
@@ -78,6 +86,11 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
 `;
 
 export default function Profile() {
@@ -149,7 +162,7 @@ export default function Profile() {
         <div className="container" style={{ padding: "40px 24px" }}>
             <ProfileHeader>
                 <AvatarWrapper>
-                    <AvatarImg src={u.avatar || "https://via.placeholder.com/150"} alt={u.username} />
+                    <AvatarImg src={buildImageUrl(u.avatar) || "https://via.placeholder.com/150"} alt={u.username} />
                     {isMe && (
                         <AvatarOverlay className="overlay">
                             <label style={{ cursor: "pointer", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>

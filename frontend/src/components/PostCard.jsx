@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { deletePost } from "../services/api";
+import { deletePost, buildImageUrl } from "../services/api";
 import { FaTrash } from "react-icons/fa";
 
 const Card = styled.div`
@@ -24,12 +24,24 @@ const DeleteBtn = styled.button`
   border: none;
   width: 32px; height: 32px;
   border-radius: 50%;
-  display: flex; alignItems: center; justifyContent: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   z-index: 10;
   
   &:hover { background: red; }
 `;
+
+const ImgWrapper = styled.div`
+  height: 360px;
+  overflow: hidden;
+
+  @media (max-width: 480px) {
+    height: 260px;
+  }
+`;
+
 
 export default function PostCard({ p, onDelete }) {
     const { user } = useContext(AuthContext);
@@ -53,9 +65,9 @@ export default function PostCard({ p, onDelete }) {
         <Card>
             {isOwner && <DeleteBtn onClick={handleDelete}><FaTrash size={14} /></DeleteBtn>}
             <Link to={`/post/${p.id}`}>
-                <div style={{ height: 360, overflow: 'hidden' }}>
-                    <img src={p.image_url} alt={p.caption} style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#f8fafc' }} />
-                </div>
+                <ImgWrapper>
+                    <img src={buildImageUrl(p.image_url)} alt={p.caption} style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#f8fafc' }} />
+                </ImgWrapper>
                 <div style={{ padding: 14 }}>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{p.title || "Untitled"}</div>
                     <div style={{ color: '#64748B', marginTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>

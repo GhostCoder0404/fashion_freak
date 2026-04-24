@@ -9,11 +9,18 @@ import HowItWorks from "../components/HowItWorks";
 import TopRated from "../components/TopRated";
 
 const LinksSection = styled.div`
-  padding: 4rem 0;
+  padding: 4rem 1rem;
   background: #fff;
   display: flex;
   justify-content: center;
-  gap: 2rem;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+
+  @media (max-width: 480px) {
+    padding: 2rem 1rem;
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 const StyledLink = styled(Link)`

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import heroImg from "../assets/hero.jpg";
+import heroMobileImg from "../assets/Vertical_bg.jpeg";
 
 const Section = styled.section`
   min-height: 85vh;
@@ -12,6 +13,11 @@ const Section = styled.section`
   background: url(${heroImg}) center/cover no-repeat fixed;
   color: white;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    background: url(${heroMobileImg}) center/cover no-repeat;
+    min-height: 75vh;
+  }
 `;
 
 const Overlay = styled.div`
@@ -30,6 +36,10 @@ const Inner = styled.div`
   flex-direction: column;
   justify-content: center;
   padding: 64px 0;
+
+  @media (max-width: 768px) {
+    padding: 48px 0;
+  }
 `;
 
 const Content = styled(motion.div)`
@@ -73,6 +83,11 @@ const Subtitle = styled.p`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 1.2rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
 `;
 
 const CTA = styled.button`

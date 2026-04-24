@@ -6,16 +6,21 @@ import { FaGenderless, FaCloudUploadAlt, FaMagic } from "react-icons/fa";
 const Wrap = styled.section` 
     padding: 80px 0;
     background: #f8fafc;
+
+    @media (max-width: 600px) {
+        padding: 48px 0;
+    }
 `;
 
 const Title = styled.h3`
     text-align: center;
-    font-size: 2.5rem;
+    font-size: clamp(1.6rem, 5vw, 2.5rem);
     font-weight: 800;
     margin-bottom: 3rem;
     background: linear-gradient(to right, #000, #434343);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    padding: 0 1rem;
 `;
 
 const Grid = styled.div` 

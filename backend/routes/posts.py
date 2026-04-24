@@ -64,6 +64,39 @@ async def feed(skip: int = 0, limit: int = 20):
         items.append(p)
     return items
 
+# ⚠️ These specific routes MUST be defined BEFORE the /{post_id} wildcard
+# otherwise FastAPI will try to parse "search" / "liked" as ObjectIds → 500 crash
+@router.get("/search")
+async def search_posts(q: str = ""):
+    cursor = posts_collection.find(
+        {"$or": [{"title": {"$regex": q, "$options": "i"}},
+                 {"caption": {"$regex": q, "$options": "i"}},
+                 {"occasion": {"$regex": q, "$options": "i"}}]}
+    ).limit(20)
+    results = []
+    async for p in cursor:
+        p["id"] = str(p["_id"])
+        p.pop("_id", None)
+        p["owner_id"] = str(p["owner_id"])
+        owner = await users_collection.find_one({"_id": ObjectId(p["owner_id"])})
+        p["owner_username"] = owner["username"] if owner else "unknown"
+        results.append(p)
+    return results
+
+@router.get("/liked")
+async def get_liked_posts(user=Depends(get_current_user)):
+    user_id = str(user["_id"])
+    cursor = posts_collection.find({"ratings.user_id": user_id}).sort("created_at", -1)
+    posts = []
+    async for p in cursor:
+        p["id"] = str(p["_id"])
+        p.pop("_id", None)
+        p["owner_id"] = str(p["owner_id"])
+        owner = await users_collection.find_one({"_id": ObjectId(p["owner_id"])})
+        p["owner_username"] = owner["username"] if owner else "unknown"
+        posts.append(p)
+    return posts
+
 @router.get("/{post_id}")
 async def get_post(post_id: str):
     p = await posts_collection.find_one({"_id": ObjectId(post_id)})

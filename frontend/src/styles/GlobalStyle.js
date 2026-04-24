@@ -17,4 +17,8 @@ export default createGlobalStyle`
   a{ color:inherit; text-decoration:none; }
   button{ font-family: inherit; }
   .container { width: min(1200px, 94%); margin: 0 auto; }
+  img { max-width: 100%; }
+  @media (max-width: 480px) {
+    .container { width: 100%; padding: 0 16px; }
+  }
 `;

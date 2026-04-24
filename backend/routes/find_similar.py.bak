@@ -1,0 +1,228 @@
+
+import os
+import json
+import urllib.parse
+import io
+import base64
+from fastapi import APIRouter, HTTPException
+from db.mongo import posts_collection
+from bson.objectid import ObjectId
+from PIL import Image
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
+
+router = APIRouter(prefix="/api", tags=["FindSimilar"])
+
+groq_key = os.getenv("GROQ_API_KEY")
+
+
+def get_openai_client():
+    if not groq_key:
+        return None
+    return OpenAI(
+        api_key=groq_key,
+        base_url="https://api.groq.com/openai/v1"
+    )
+
+
+def build_shopping_links(query: str) -> list:
+    """Build product search URLs for major fashion platforms."""
+    encoded = urllib.parse.quote_plus(query)
+    return [
+        {
+            "platform": "Google Shopping",
+            "logo": "🛒",
+            "color": "#4285F4",
+            "url": f"https://www.google.com/search?tbm=shop&q={encoded}",
+            "description": "Search across thousands of stores"
+        },
+        {
+            "platform": "Amazon Fashion",
+            "logo": "📦",
+            "color": "#FF9900",
+            "url": f"https://www.amazon.com/s?k={encoded}&rh=n%3A7141123011",
+            "description": "Fast delivery, wide selection"
+        },
+        {
+            "platform": "ASOS",
+            "logo": "👗",
+            "color": "#2D2D2D",
+            "url": f"https://www.asos.com/search/?q={encoded}",
+            "description": "Trendy fashion, all sizes"
+        },
+        {
+            "platform": "Zara",
+            "logo": "✨",
+            "color": "#1C1C1C",
+            "url": f"https://www.zara.com/us/en/search?searchTerm={encoded}",
+            "description": "Premium high-street fashion"
+        },
+        {
+            "platform": "H&M",
+            "logo": "🏷️",
+            "color": "#E50010",
+            "url": f"https://www2.hm.com/en_us/search-results.html?q={encoded}",
+            "description": "Affordable everyday style"
+        },
+        {
+            "platform": "Flipkart Fashion",
+            "logo": "🎯",
+            "color": "#2874F0",
+            "url": f"https://www.flipkart.com/search?q={encoded}&otracker=search&category=clothing",
+            "description": "Best Indian fashion deals"
+        },
+        {
+            "platform": "Myntra",
+            "logo": "💜",
+            "color": "#FF3F6C",
+            "url": f"https://www.myntra.com/{encoded}",
+            "description": "India's top fashion destination"
+        },
+        {
+            "platform": "Pinterest",
+            "logo": "📌",
+            "color": "#E60023",
+            "url": f"https://www.pinterest.com/search/pins/?q={encoded}+fashion+outfit",
+            "description": "Visual style inspiration"
+        },
+    ]
+
+
+def image_to_base64(image_bytes: bytes) -> str:
+    """Convert raw image bytes to base64 string for OpenAI Vision."""
+    img = Image.open(io.BytesIO(image_bytes))
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")
+    buffer = io.BytesIO()
+    img.save(buffer, format="JPEG", quality=85)
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+
+async def analyze_image_with_openai(image_bytes: bytes, occasion: str, gender: str) -> dict:
+    """Use OpenAI GPT-4o Vision to extract fashion keywords from outfit image."""
+    client = get_openai_client()
+    if not client:
+        return None
+    try:
+        b64_image = image_to_base64(image_bytes)
+
+        prompt = f"""You are a fashion analyst. Analyze this {gender}'s outfit meant for a {occasion} occasion.
+
+Return ONLY a valid JSON object with NO markdown, NO backticks. Keys:
+- "clothing_type": main clothing item (e.g. "floral midi dress", "slim-fit chinos", "oversized hoodie")
+- "color": primary color(s) (e.g. "navy blue and white", "olive green")
+- "style": style category (e.g. "casual streetwear", "smart casual", "formal office")
+- "fabric_guess": likely fabric (e.g. "cotton", "denim", "silk")
+- "search_query": a concise 4-7 word Google Shopping search query to find THIS exact outfit type online
+- "tags": array of 4-6 single-word style tags"""
+
+        response = client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{b64_image}",
+                                "detail": "low"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ],
+            max_tokens=400,
+            temperature=0.5
+        )
+
+        text = response.choices[0].message.content.strip()
+
+        # Strip markdown if present
+        if text.startswith("```"):
+            lines = text.split("\n")
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip() == "```":
+                lines = lines[:-1]
+            text = "\n".join(lines).strip()
+
+        return json.loads(text)
+
+    except Exception as e:
+        print(f"OpenAI FindSimilar Error: {e}")
+        return None
+
+
+@router.get("/find-similar/{post_id}")
+async def find_similar_products(post_id: str):
+    """
+    Analyzes a post's outfit image with OpenAI Vision
+    and returns shopping links + style metadata.
+    """
+    # 1. Fetch the post
+    try:
+        post = await posts_collection.find_one({"_id": ObjectId(post_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid post ID")
+
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    occasion = post.get("occasion", "casual")
+    gender = post.get("gender", "unisex")
+    title = post.get("title", "")
+
+    # 2. Read the image file from uploads/
+    image_url = post.get("image_url", "")
+    filename = image_url.split("/uploads/")[-1] if "/uploads/" in image_url else None
+    image_bytes = None
+
+    if filename:
+        filepath = os.path.join("uploads", filename)
+        if os.path.exists(filepath):
+            with open(filepath, "rb") as f:
+                image_bytes = f.read()
+
+    # 3. Try OpenAI Vision analysis
+    ai_data = None
+    if image_bytes:
+        ai_data = await analyze_image_with_openai(image_bytes, occasion, gender)
+
+    # 4. Build search query
+    if ai_data and ai_data.get("search_query"):
+        search_query = ai_data["search_query"]
+        clothing_type = ai_data.get("clothing_type", title)
+        color = ai_data.get("color", "")
+        style = ai_data.get("style", occasion)
+        fabric = ai_data.get("fabric_guess", "")
+        tags = ai_data.get("tags", [gender, occasion])
+    else:
+        search_query = f"{gender} {occasion} {title} outfit fashion"
+        clothing_type = title or "outfit"
+        color = ""
+        style = occasion
+        fabric = ""
+        tags = [gender, occasion]
+
+    # 5. Build shopping URLs
+    shopping_links = build_shopping_links(search_query)
+
+    return {
+        "post_id": post_id,
+        "image_url": image_url,
+        "search_query": search_query,
+        "clothing_type": clothing_type,
+        "color": color,
+        "style": style,
+        "fabric": fabric,
+        "tags": tags,
+        "shopping_links": shopping_links,
+        "ai_powered": ai_data is not None
+    }

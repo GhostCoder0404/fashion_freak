@@ -16,6 +16,7 @@ async def create_access_token(subject: str):
     return jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 @router.post("/signup", response_model=UserOut)
+@router.post("/register", response_model=UserOut)  # mobile alias
 async def signup(payload: UserCreate):
     existing = await users_collection.find_one({"$or":[{"email":payload.email},{"username":payload.username}]})
     if existing:

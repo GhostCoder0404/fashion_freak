@@ -1,5 +1,13 @@
 // frontend/src/services/api.js
-const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+export const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
+// Converts relative image paths (e.g. "uploads/abc.jpg") stored by the backend
+// into absolute URLs, while leaving already-absolute URLs untouched.
+export function buildImageUrl(url) {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `${API_BASE}/${url}`;
+}
 
 let jwtToken = null;
 export function setToken(t) {
@@ -76,4 +84,12 @@ export function updateProfile(data) {
 
 export function searchUsers(q) {
     return request(`/users/search?q=${q}`, { method: "GET" });
+}
+
+export function findSimilarProducts(postId) {
+    return request(`/api/find-similar/${postId}`, { method: "GET" });
+}
+
+export function outfitDetailedAnalysis(formData) {
+    return request("/api/outfit-detailed-analysis", { method: "POST", body: formData });
 }

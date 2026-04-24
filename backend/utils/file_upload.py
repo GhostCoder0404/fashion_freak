@@ -18,6 +18,6 @@ def save_upload(file: UploadFile) -> str:
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    # Return web-accessible path
-    # Assuming backend runs on 8000
-    return f"http://127.0.0.1:8000/uploads/{unique_name}"
+    # Return a relative path so mobile clients build the URL using their own BASE_URL.
+    # Storing an absolute localhost URL breaks image loading on physical devices.
+    return f"uploads/{unique_name}"
