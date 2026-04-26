@@ -116,16 +116,24 @@ async def find_similar_products(post_id: str):
     title = post.get("title", "")
 
     image_url = post.get("image_url", "")
-    filename = None
-    if "uploads/" in image_url:
-        filename = image_url.split("uploads/")[-1]
     image_bytes = None
 
-    if filename:
-        filepath = os.path.join("uploads", filename)
-        if os.path.exists(filepath):
-            with open(filepath, "rb") as f:
-                image_bytes = f.read()
+    if image_url:
+        if image_url.startswith("http"):
+            try:
+                import httpx
+                with httpx.Client() as client:
+                    response = client.get(image_url)
+                    response.raise_for_status()
+                    image_bytes = response.content
+            except Exception as e:
+                print(f"Error fetching remote image: {e}")
+        elif "uploads/" in image_url:
+            filename = image_url.split("uploads/")[-1]
+            filepath = os.path.join("uploads", filename)
+            if os.path.exists(filepath):
+                with open(filepath, "rb") as f:
+                    image_bytes = f.read()
 
     ai_data = None
     if image_bytes:

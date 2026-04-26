@@ -46,6 +46,10 @@ export function fetchFeed() {
     return request("/posts/feed", { method: "GET" });
 }
 
+export function fetchFollowingFeed() {
+    return request("/posts/following_feed", { method: "GET" });
+}
+
 export function createPost(data) {
     return request("/posts/create", { method: "POST", body: data });
 }
@@ -64,6 +68,14 @@ export function rate(data) {
 
 export function profile(username) {
     return request(`/users/profile/${username}`, { method: "GET" });
+}
+
+export function followUser(username) {
+    return request(`/users/follow/${username}`, { method: "POST" });
+}
+
+export function unfollowUser(username) {
+    return request(`/users/unfollow/${username}`, { method: "POST" });
 }
 
 export function updateAvatar(formData) {
@@ -92,4 +104,16 @@ export function findSimilarProducts(postId) {
 
 export function outfitDetailedAnalysis(formData) {
     return request("/api/outfit-detailed-analysis", { method: "POST", body: formData });
+}
+
+export function getWardrobe() {
+    return request("/wardrobe/", { method: "GET" });
+}
+
+export function addWardrobeItem(formData) {
+    return request("/wardrobe/add", { method: "POST", body: formData });
+}
+
+export function deleteWardrobeItem(id) {
+    return request(`/wardrobe/${id}`, { method: "DELETE" });
 }

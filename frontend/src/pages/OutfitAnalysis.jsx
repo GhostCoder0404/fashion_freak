@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaArrowLeft, FaStar, FaCheckCircle, FaTimesCircle, FaLightbulb, FaTshirt } from "react-icons/fa";
+import { FaArrowLeft, FaStar, FaCheckCircle, FaTimesCircle, FaLightbulb, FaTshirt, FaDownload } from "react-icons/fa";
 import { outfitDetailedAnalysis } from "../services/api";
 
 // ─── ANIMATIONS ───────────────────────────────────────────────────────────────
@@ -456,6 +456,117 @@ export default function OutfitAnalysis() {
     }
   };
 
+  const downloadReportCard = async () => {
+    if (!preview || !analysis) return;
+    
+    // Create canvas
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1920; // 9:16 aspect ratio for Instagram stories
+    const ctx = canvas.getContext("2d");
+
+    // 1. Draw Background (Gradient)
+    const bgGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    bgGradient.addColorStop(0, "#0f0c29");
+    bgGradient.addColorStop(0.5, "#302b63");
+    bgGradient.addColorStop(1, "#24243e");
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Load User Image
+    const img = new Image();
+    img.src = preview;
+    await new Promise((resolve) => { img.onload = resolve; });
+
+    // Draw image in the center
+    const imgWidth = 800;
+    const imgHeight = 1066; // 3:4 ratio
+    const imgX = (canvas.width - imgWidth) / 2;
+    const imgY = 250;
+    
+    // Draw white border/card behind image
+    ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.beginPath();
+    ctx.roundRect(imgX - 20, imgY - 20, imgWidth + 40, imgHeight + 40, [30]);
+    ctx.fill();
+
+    // Draw the actual image
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(imgX, imgY, imgWidth, imgHeight, [20]);
+    ctx.clip();
+    
+    // Object-cover logic
+    const imgRatio = img.width / img.height;
+    const targetRatio = imgWidth / imgHeight;
+    let drawWidth = imgWidth;
+    let drawHeight = imgHeight;
+    let offsetX = 0;
+    let offsetY = 0;
+    
+    if (imgRatio > targetRatio) {
+      drawWidth = imgHeight * imgRatio;
+      offsetX = (imgWidth - drawWidth) / 2;
+    } else {
+      drawHeight = imgWidth / imgRatio;
+      offsetY = (imgHeight - drawHeight) / 2;
+    }
+    
+    ctx.drawImage(img, imgX + offsetX, imgY + offsetY, drawWidth, drawHeight);
+    ctx.restore();
+
+    // 3. Draw Header text
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 70px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("FASHION FREAK", canvas.width / 2, 120);
+    
+    ctx.font = "40px sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+    ctx.fillText("AI Outfit Analysis", canvas.width / 2, 180);
+
+    // 4. Draw Score Circle
+    const scoreText = Number(analysis.overall_rating).toFixed(1);
+    const scoreColor = getRatingColor(analysis.overall_rating);
+    
+    // Draw circle
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, imgY + imgHeight + 150, 100, 0, 2 * Math.PI);
+    ctx.fillStyle = "#111";
+    ctx.fill();
+    ctx.lineWidth = 15;
+    ctx.strokeStyle = scoreColor;
+    ctx.stroke();
+
+    // Draw Score
+    ctx.fillStyle = scoreColor;
+    ctx.font = "bold 80px sans-serif";
+    ctx.textBaseline = "middle";
+    ctx.fillText(scoreText, canvas.width / 2, imgY + imgHeight + 150);
+
+    // 5. Draw Rating Label & Occasion
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 50px sans-serif";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(analysis.rating_label.toUpperCase(), canvas.width / 2, imgY + imgHeight + 330);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.font = "40px sans-serif";
+    const gen = gender ? gender.toUpperCase() : "UNISEX";
+    const occ = occasion ? occasion.toUpperCase() : "CASUAL";
+    ctx.fillText(`${gen} • ${occ}`, canvas.width / 2, imgY + imgHeight + 400);
+
+    // 6. Download Image
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fashion-freak-report-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  };
+
   useEffect(() => {
     runAnalysis();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -632,7 +743,34 @@ export default function OutfitAnalysis() {
               )}
 
               {/* Bottom action */}
-              <div style={{ textAlign: "center", marginTop: "3rem", marginBottom: "2rem" }}>
+              <div style={{ textAlign: "center", marginTop: "3rem", marginBottom: "2rem", display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+                <button
+                  onClick={downloadReportCard}
+                  style={{
+                    padding: "1rem 2.5rem",
+                    background: "transparent",
+                    border: "2px solid rgba(255,255,255,0.3)",
+                    borderRadius: "50px",
+                    color: "white",
+                    fontSize: "1.1rem",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
+                  }}
+                >
+                  <FaDownload /> Download Story
+                </button>
                 <button
                   onClick={() => navigate("/try")}
                   style={{

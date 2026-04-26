@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaMars, FaVenus, FaCloudUploadAlt, FaMagic, FaArrowLeft, FaCoffee, FaBlackTie, FaRing, FaDumbbell, FaCrown, FaHeart } from "react-icons/fa";
+import { FaMars, FaVenus, FaCloudUploadAlt, FaMagic, FaArrowLeft, FaCoffee, FaBlackTie, FaRing, FaDumbbell, FaCrown, FaHeart, FaCamera } from "react-icons/fa";
 import * as api from "../services/api"; // We will add predictScore here
 import { useNavigate } from "react-router-dom";
 
@@ -199,6 +199,64 @@ const UploadContent = styled.div`
   }
 `;
 
+const CameraContainer = styled(motion.div)`
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+  background: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(255,255,255,0.3);
+  
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const SnapButton = styled.button`
+  position: absolute;
+  bottom: 20px;
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 30px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  &:hover {
+    background: #e2e8f0;
+  }
+`;
+
+const SecondaryButton = styled.button`
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.5);
+  padding: 0.8rem 2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(255,255,255,0.1);
+  }
+`;
+
 const AnalyzeButton = styled(motion.button)`
   margin-top: 3rem;
   padding: 1rem 4rem;
@@ -344,6 +402,51 @@ export default function TryOutfit() {
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
 
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      streamRef.current = stream;
+      setIsCameraActive(true);
+      // We need a slight timeout to let React render the video element first
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 50);
+    } catch (err) {
+      alert("Could not access camera. Please allow permissions.");
+      console.error(err);
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    
+    canvas.toBlob((blob) => {
+      const capturedFile = new File([blob], "captured_photo.jpg", { type: "image/jpeg" });
+      setFile(capturedFile);
+      setPreview(URL.createObjectURL(capturedFile));
+      stopCamera();
+    }, "image/jpeg", 0.9);
+  };
+
   const handleGenderSelect = (g) => {
     setGender(g);
     setBg(g === "male" ? "#141E30" : "#240b36"); // Deep Blue or Deep Purple
@@ -398,6 +501,7 @@ export default function TryOutfit() {
     setPreview(null);
     setResult(null);
     setBg("#1a1a1a");
+    stopCamera();
   };
 
   const getScoreColor = (s) => {
@@ -473,19 +577,38 @@ export default function TryOutfit() {
             exit={{ opacity: 0, x: -100 }}
           >
             <Title>Show us the Fit</Title>
-            <Subtitle>Upload a clear photo of your outfit.</Subtitle>
+            <Subtitle>Upload a clear photo or snap one right now.</Subtitle>
 
-            <UploadBox whileHover={{ scale: 1.02 }}>
-              <input type="file" accept="image/*" onChange={handleFileChange} />
-              {preview ? (
-                <img src={preview} alt="Preview" />
-              ) : (
-                <UploadContent>
-                  <FaCloudUploadAlt />
-                  <h3>Click or Drag Image Here</h3>
-                </UploadContent>
-              )}
-            </UploadBox>
+            {isCameraActive ? (
+              <CameraContainer>
+                <video ref={videoRef} autoPlay playsInline muted />
+                <SnapButton onClick={capturePhoto}><FaCamera /> Snap Photo</SnapButton>
+              </CameraContainer>
+            ) : (
+              <UploadBox whileHover={{ scale: 1.02 }}>
+                <input type="file" accept="image/*" onChange={handleFileChange} />
+                {preview ? (
+                  <img src={preview} alt="Preview" />
+                ) : (
+                  <UploadContent>
+                    <FaCloudUploadAlt />
+                    <h3>Click or Drag Image Here</h3>
+                  </UploadContent>
+                )}
+              </UploadBox>
+            )}
+
+            {!preview && !isCameraActive && (
+              <SecondaryButton onClick={startCamera}>
+                <FaCamera style={{ marginRight: '8px' }}/> Or Take Photo
+              </SecondaryButton>
+            )}
+            
+            {isCameraActive && (
+              <SecondaryButton onClick={stopCamera}>
+                Cancel Camera
+              </SecondaryButton>
+            )}
 
             <AnalyzeButton
               onClick={handleAnalyze}

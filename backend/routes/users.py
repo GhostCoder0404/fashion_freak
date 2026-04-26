@@ -22,6 +22,13 @@ async def profile(username: str):
         raise HTTPException(404, "User not found")
     user["id"] = str(user["_id"])
     user.pop("_id", None)
+    user.pop("password", None)
+    
+    followers = user.get("followers", [])
+    following = user.get("following", [])
+    user["followers_count"] = len(followers)
+    user["following_count"] = len(following)
+    user["followers"] = followers # To let frontend check is_following
     
     cursor = posts_collection.find({"owner_id": ObjectId(user["id"])}).sort("created_at", -1)
     posts = []
@@ -73,3 +80,25 @@ async def search_users(q: str):
     async for u in cursor:
         results.append({"username": u["username"], "avatar": u.get("avatar")})
     return results
+
+@router.post("/follow/{username}")
+async def follow_user(username: str, user=Depends(get_current_user)):
+    if username == user["username"]:
+        raise HTTPException(400, "Cannot follow yourself")
+    target = await users_collection.find_one({"username": username})
+    if not target:
+        raise HTTPException(404, "User not found")
+        
+    await users_collection.update_one({"_id": user["_id"]}, {"$addToSet": {"following": str(target["_id"])}})
+    await users_collection.update_one({"_id": target["_id"]}, {"$addToSet": {"followers": str(user["_id"])}})
+    return {"ok": True}
+
+@router.post("/unfollow/{username}")
+async def unfollow_user(username: str, user=Depends(get_current_user)):
+    target = await users_collection.find_one({"username": username})
+    if not target:
+        raise HTTPException(404, "User not found")
+        
+    await users_collection.update_one({"_id": user["_id"]}, {"$pull": {"following": str(target["_id"])}})
+    await users_collection.update_one({"_id": target["_id"]}, {"$pull": {"followers": str(user["_id"])}})
+    return {"ok": True}

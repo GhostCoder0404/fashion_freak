@@ -19,6 +19,7 @@ import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import FindProduct from "./pages/FindProduct";
 import OutfitAnalysis from "./pages/OutfitAnalysis";
+import Wardrobe from "./pages/Wardrobe";
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/find-product/:postId" element={<FindProduct />} />
             <Route path="/outfit-analysis" element={<OutfitAnalysis />} />
+            <Route path="/wardrobe" element={<Wardrobe />} />
           </Routes>
           <Footer />
         </BrowserRouter>

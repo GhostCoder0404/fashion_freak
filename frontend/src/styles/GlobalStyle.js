@@ -8,11 +8,12 @@ export default createGlobalStyle`
   body{
     margin:0;
     font-family: 'Outfit', system-ui, Arial, sans-serif;
-    background: #fff;
-    color: #0f1724;
+    background: ${p => p.theme.colors.bg};
+    color: ${p => p.theme.colors.text};
     -webkit-font-smoothing:antialiased;
     -moz-osx-font-smoothing:grayscale;
     -webkit-font-feature-settings: "kern";
+    transition: background 0.3s ease, color 0.3s ease;
   }
   a{ color:inherit; text-decoration:none; }
   button{ font-family: inherit; }

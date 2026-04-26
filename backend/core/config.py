@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200
     GEMINI_API_KEY: str | None = None
+    CLOUDINARY_URL: str | None = None
 
     class Config:
         env_file = ".env"

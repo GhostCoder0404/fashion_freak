@@ -68,15 +68,15 @@ const CreateBtn = styled(Link)`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #000;
-  color: #fff;
+  background: ${p => p.theme.colors.text};
+  color: ${p => p.theme.colors.bg};
   padding: 8px 16px;
   border-radius: 8px;
   font-weight: 600;
   transition: all 0.2s;
   &:hover {
-    background: #333;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
 `;
 
@@ -160,6 +160,7 @@ export default function Navbar() {
         <NavLinks>
           <NavA to="/">Home</NavA>
           <NavA to="/explore">Explore</NavA>
+          <NavA to="/wardrobe">Wardrobe</NavA>
           <NavA to="/search">Search</NavA>
           <NavA to="/try" style={{
             background: 'linear-gradient(135deg, #00c2b3 0%, #009e91 100%)',
@@ -192,7 +193,7 @@ export default function Navbar() {
           ) : (
             <>
               <NavA to="/login">Login</NavA>
-              <NavA to="/signup" style={{ background: '#000', color: '#fff' }}>Sign up</NavA>
+              <NavA to="/signup" style={{ background: mode === 'light' ? '#000' : '#fff', color: mode === 'light' ? '#fff' : '#000' }}>Sign up</NavA>
             </>
           )}
         </NavLinks>
@@ -207,6 +208,7 @@ export default function Navbar() {
       <MobileMenu $open={menuOpen}>
         <MobileNavA to="/" onClick={closeMenu}>Home</MobileNavA>
         <MobileNavA to="/explore" onClick={closeMenu}>Explore</MobileNavA>
+        <MobileNavA to="/wardrobe" onClick={closeMenu}>Wardrobe</MobileNavA>
         <MobileNavA to="/search" onClick={closeMenu}>Search</MobileNavA>
         <MobileNavA to="/try" onClick={closeMenu} style={{
           background: 'linear-gradient(135deg, #00c2b3 0%, #009e91 100%)',
@@ -224,7 +226,7 @@ export default function Navbar() {
 
         {user ? (
           <>
-            <MobileNavA to="/create" onClick={closeMenu} style={{ background: '#000', color: '#fff' }}>
+            <MobileNavA to="/create" onClick={closeMenu} style={{ background: mode === 'light' ? '#000' : '#fff', color: mode === 'light' ? '#fff' : '#000' }}>
               + Create Post
             </MobileNavA>
             <MobileRow>
@@ -242,7 +244,7 @@ export default function Navbar() {
         ) : (
           <MobileRow>
             <MobileNavA to="/login" onClick={closeMenu}>Login</MobileNavA>
-            <MobileNavA to="/signup" onClick={closeMenu} style={{ background: '#000', color: '#fff', borderRadius: 8 }}>Sign up</MobileNavA>
+            <MobileNavA to="/signup" onClick={closeMenu} style={{ background: mode === 'light' ? '#000' : '#fff', color: mode === 'light' ? '#fff' : '#000', borderRadius: 8 }}>Sign up</MobileNavA>
           </MobileRow>
         )}
       </MobileMenu>

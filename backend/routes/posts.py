@@ -64,6 +64,25 @@ async def feed(skip: int = 0, limit: int = 20):
         items.append(p)
     return items
 
+@router.get("/following_feed")
+async def following_feed(skip: int = 0, limit: int = 20, user=Depends(get_current_user)):
+    following_ids = user.get("following", [])
+    if not following_ids:
+        return []
+    
+    following_obj_ids = [ObjectId(uid) for uid in following_ids]
+    cursor = posts_collection.find({"owner_id": {"$in": following_obj_ids}}).sort("created_at", -1).skip(skip).limit(limit)
+    items = []
+    async for p in cursor:
+        p["id"] = str(p["_id"])
+        p.pop("_id", None)
+        p["owner_id"] = str(p["owner_id"])
+        
+        owner = await users_collection.find_one({"_id": ObjectId(p["owner_id"])})
+        p["owner_username"] = owner["username"] if owner else "unknown"
+        items.append(p)
+    return items
+
 # ⚠️ These specific routes MUST be defined BEFORE the /{post_id} wildcard
 # otherwise FastAPI will try to parse "search" / "liked" as ObjectIds → 500 crash
 @router.get("/search")

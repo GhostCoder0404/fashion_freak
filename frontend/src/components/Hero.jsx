@@ -100,11 +100,13 @@ const CTA = styled.button`
   font-size: 1rem;
   cursor: pointer;
   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    background: ${p => p.theme.colors.accent1};
+    color: #fff;
   }
 `;
 

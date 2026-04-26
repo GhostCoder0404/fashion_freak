@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { findSimilarProducts, buildImageUrl } from "../services/api";
-import { FaArrowLeft, FaExternalLinkAlt, FaMagic, FaSearch, FaTag, FaGoogle, FaAmazon, FaPinterest } from "react-icons/fa";
+import { findSimilarProducts, buildImageUrl, addWardrobeItem } from "../services/api";
+import { FaArrowLeft, FaExternalLinkAlt, FaMagic, FaSearch, FaTag, FaGoogle, FaAmazon, FaPinterest, FaPlus, FaCheck } from "react-icons/fa";
 
 // --- Animations ---
 const shimmer = keyframes`
@@ -318,6 +318,38 @@ const MyntraLogo = () => (
   }}>M</span>
 );
 
+const SaveToClosetBtn = styled.button`
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #a855f7, #f093fb);
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+  }
+
+  &:disabled {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+`;
+
 // --- Loading Skeleton ---
 const SkeletonPulse = styled.div`
   background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
@@ -351,6 +383,33 @@ export default function FindProduct() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loadingMsg, setLoadingMsg] = useState("Analyzing your outfit with AI...");
+  const [savingItem, setSavingItem] = useState(null);
+  const [savedItems, setSavedItems] = useState({});
+
+  const handleSaveToCloset = async (item, index) => {
+    try {
+      setSavingItem(index);
+      const typeLower = (item.type || "").toLowerCase();
+      let category = "accessory";
+      if (typeLower.includes("top") || typeLower.includes("shirt") || typeLower.includes("jacket")) category = "top";
+      else if (typeLower.includes("bottom") || typeLower.includes("pants") || typeLower.includes("jeans") || typeLower.includes("trouser")) category = "bottom";
+      else if (typeLower.includes("shoe") || typeLower.includes("footwear") || typeLower.includes("sneaker")) category = "footwear";
+
+      const formData = new FormData();
+      formData.append("category", category);
+      formData.append("color", data.color || ""); // Fallback to outfit color
+      formData.append("brand", item.name || ""); // Use item name as generic brand/title
+      formData.append("image_url", data.image_url);
+
+      await addWardrobeItem(formData);
+      setSavedItems(prev => ({ ...prev, [index]: true }));
+    } catch (err) {
+      console.error("Failed to save to closet", err);
+      alert("Failed to save item to wardrobe. Please try again.");
+    } finally {
+      setSavingItem(null);
+    }
+  };
 
   useEffect(() => {
     const msgs = [
@@ -586,6 +645,19 @@ export default function FindProduct() {
                               <FaPinterest size={14} /> Pinterest
                             </StoreBtn>
                           </StoreLinksRow>
+                          
+                          <SaveToClosetBtn 
+                            onClick={() => handleSaveToCloset(item, i)}
+                            disabled={savingItem === i || savedItems[i]}
+                          >
+                            {savedItems[i] ? (
+                              <><FaCheck /> Saved to Closet</>
+                            ) : savingItem === i ? (
+                              "Saving..."
+                            ) : (
+                              <><FaPlus /> Save to Closet</>
+                            )}
+                          </SaveToClosetBtn>
                         </ItemCard>
                       );
                     })}

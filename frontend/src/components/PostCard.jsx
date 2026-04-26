@@ -7,12 +7,19 @@ import { deletePost, buildImageUrl } from "../services/api";
 import { FaTrash } from "react-icons/fa";
 
 const Card = styled.div`
-  background:white; border-radius:12px; overflow:hidden;
-  box-shadow:0 18px 40px rgba(2,6,23,0.06); display:flex; flex-direction:column;
+  background: ${p => p.theme.colors.panel};
+  border-radius:12px; overflow:hidden;
+  border: 1px solid ${p => p.theme.colors.border};
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  display:flex; flex-direction:column;
   position: relative;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
   
-  &:hover { transform: translateY(-5px); }
+  &:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: ${p => p.theme.colors.accent1};
+  }
 `;
 
 const DeleteBtn = styled.button`
@@ -34,12 +41,11 @@ const DeleteBtn = styled.button`
 `;
 
 const ImgWrapper = styled.div`
-  height: 360px;
+  width: 100%;
   overflow: hidden;
-
-  @media (max-width: 480px) {
-    height: 260px;
-  }
+  position: relative;
+  min-height: 200px; /* prevents layout shift on slow load */
+  background: rgba(0,0,0,0.02);
 `;
 
 
@@ -66,7 +72,7 @@ export default function PostCard({ p, onDelete }) {
             {isOwner && <DeleteBtn onClick={handleDelete}><FaTrash size={14} /></DeleteBtn>}
             <Link to={`/post/${p.id}`}>
                 <ImgWrapper>
-                    <img src={buildImageUrl(p.image_url)} alt={p.caption} style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#f8fafc' }} />
+                    <img src={buildImageUrl(p.image_url)} alt={p.caption} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain', backgroundColor: 'transparent' }} />
                 </ImgWrapper>
                 <div style={{ padding: 14 }}>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{p.title || "Untitled"}</div>

@@ -1,11 +1,12 @@
 
 import React, { useEffect, useState, useContext } from "react";
-import { profile, updateAvatar, fetchLikedPosts, deletePost, updateProfile, buildImageUrl } from "../services/api";
+import { profile, updateAvatar, fetchLikedPosts, deletePost, updateProfile, buildImageUrl, followUser, unfollowUser } from "../services/api";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import PostCard from "../components/PostCard";
 import styled from "styled-components";
-import { FaCamera, FaHeart, FaLayerGroup, FaTrash, FaEdit } from "react-icons/fa";
+import { FaCamera, FaHeart, FaLayerGroup, FaTrash, FaEdit, FaRegImages } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const ProfileHeader = styled.div`
   display: flex;
@@ -82,14 +83,75 @@ const Tab = styled.button`
   &:hover { color: #000; }
 `;
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
+const MasonryGrid = styled.div`
+  column-count: 3;
+  column-gap: 18px;
 
+  @media (max-width: 1000px) {
+    column-count: 2;
+  }
   @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
+    column-count: 1;
+  }
+
+  & > * {
+    break-inside: avoid;
+    margin-bottom: 18px;
+  }
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+  color: ${p => p.theme.colors.muted};
+  background: ${p => p.theme.colors.panel};
+  border-radius: 20px;
+  border: 1px dashed ${p => p.theme.colors.border};
+  
+  svg {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  
+  h3 {
+    color: ${p => p.theme.colors.text};
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+  }
+`;
+
+const CreateBtnEmpty = styled(Link)`
+  margin-top: 1.5rem;
+  padding: 0.8rem 2rem;
+  background: ${p => p.theme.colors.text};
+  color: ${p => p.theme.colors.bg};
+  border-radius: 50px;
+  font-weight: bold;
+  transition: transform 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+`;
+
+const FollowButton = styled.button`
+  padding: 0.6rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: ${props => props.$isFollowing ? "transparent" : props.theme.colors.text};
+  color: ${props => props.$isFollowing ? props.theme.colors.text : props.theme.colors.bg};
+  border: 2px solid ${props => props.$isFollowing ? props.theme.colors.border : props.theme.colors.text};
+
+  &:hover {
+    opacity: 0.8;
   }
 `;
 
@@ -102,6 +164,7 @@ export default function Profile() {
     const [error, setError] = useState(null);
     const [editingBio, setEditingBio] = useState(false);
     const [newBio, setNewBio] = useState("");
+    const [isFollowing, setIsFollowing] = useState(false);
 
     useEffect(() => {
         loadProfile();
@@ -116,11 +179,56 @@ export default function Profile() {
 
     const loadProfile = () => {
         profile(username)
-            .then(setData)
+            .then(res => {
+                setData(res);
+                if (user && res.user.followers && res.user.followers.includes(user.id)) {
+                    setIsFollowing(true);
+                } else {
+                    setIsFollowing(false);
+                }
+            })
             .catch((err) => {
                 console.error(err);
                 setError("User not found.");
             });
+    };
+    
+    useEffect(() => {
+        if (data && user && data.user.followers) {
+            setIsFollowing(data.user.followers.includes(user.id));
+        }
+    }, [data, user]);
+
+    const handleFollowToggle = async () => {
+        if (!user) return alert("Please login to follow");
+        try {
+            if (isFollowing) {
+                await unfollowUser(username);
+                setData(prev => ({
+                    ...prev,
+                    user: { 
+                        ...prev.user, 
+                        followers_count: Math.max(0, (prev.user.followers_count || 0) - 1),
+                        followers: (prev.user.followers || []).filter(id => id !== user.id)
+                    }
+                }));
+                setIsFollowing(false);
+            } else {
+                await followUser(username);
+                setData(prev => ({
+                    ...prev,
+                    user: { 
+                        ...prev.user, 
+                        followers_count: (prev.user.followers_count || 0) + 1,
+                        followers: [...(prev.user.followers || []), user.id]
+                    }
+                }));
+                setIsFollowing(true);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to update follow status");
+        }
     };
 
     const handleAvatarChange = async (e) => {
@@ -174,7 +282,14 @@ export default function Profile() {
                 </AvatarWrapper>
 
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '2.5rem' }}>{u.username}</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                        <h1 style={{ margin: 0, fontSize: '2.5rem' }}>{u.username}</h1>
+                        {!isMe && (
+                            <FollowButton $isFollowing={isFollowing} onClick={handleFollowToggle}>
+                                {isFollowing ? "Following" : "Follow"}
+                            </FollowButton>
+                        )}
+                    </div>
 
                     {isMe ? (
                         <div style={{ marginTop: '0.5rem' }}>
@@ -201,8 +316,10 @@ export default function Profile() {
                         </p>
                     )}
 
-                    <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem', fontWeight: 'bold' }}>
+                    <div style={{ display: 'flex', gap: '2rem', marginTop: '1.5rem', fontWeight: 'bold' }}>
                         <span>{posts.length} Posts</span>
+                        <span>{u.followers_count || 0} Followers</span>
+                        <span>{u.following_count || 0} Following</span>
                     </div>
                 </div>
             </ProfileHeader>
@@ -218,7 +335,7 @@ export default function Profile() {
                 )}
             </Tabs>
 
-            <Grid>
+            <MasonryGrid>
                 {activeTab === "posts" && posts.map(p => (
                     <PostCard
                         key={p.id}
@@ -227,10 +344,25 @@ export default function Profile() {
                     />
                 ))}
                 {activeTab === "liked" && likedPosts.map(p => <PostCard key={p.id} p={p} />)}
-            </Grid>
+            </MasonryGrid>
 
-            {activeTab === "posts" && posts.length === 0 && <p style={{ color: '#999' }}>No posts yet.</p>}
-            {activeTab === "liked" && likedPosts.length === 0 && <p style={{ color: '#999' }}>No liked posts yet.</p>}
+            {activeTab === "posts" && posts.length === 0 && (
+                <EmptyState>
+                    <FaRegImages />
+                    <h3>No fits yet</h3>
+                    <p>Time to show the world your style.</p>
+                    {isMe && <CreateBtnEmpty to="/create">Create Your First Look</CreateBtnEmpty>}
+                </EmptyState>
+            )}
+            
+            {activeTab === "liked" && likedPosts.length === 0 && (
+                <EmptyState>
+                    <FaHeart />
+                    <h3>No liked fits</h3>
+                    <p>Explore the community and save your favorites.</p>
+                    <CreateBtnEmpty to="/explore">Explore Outfits</CreateBtnEmpty>
+                </EmptyState>
+            )}
         </div>
     );
 }
