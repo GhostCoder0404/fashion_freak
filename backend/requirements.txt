@@ -7,6 +7,7 @@ python-dotenv
 passlib[bcrypt]
 python-jose[cryptography]
 pydantic
+pydantic[email]
 pydantic-settings
 openai
 cloudinary
